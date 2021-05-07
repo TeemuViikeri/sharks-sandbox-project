@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">My Application</string>
+    <string name="san_jose_sharks">San Jose Sharks</string>
+    <string name="title">Title</string>
+    <string name="player">player</string>
+    <string name="next_match">Next match</string>
+    <string name="nr">#</string>
+    <string name="position">position</string>
+    <string name="away">Away</string>
+    <string name="home">Home</string>
+    <string name="away_record">Away record</string>
+    <string name="home_record">Home record</string>
 </resources>
