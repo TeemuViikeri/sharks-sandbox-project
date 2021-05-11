@@ -15,12 +15,13 @@
 
         <TextView
             android:id="@+id/tvTitle"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:fontFamily="@font/montserrat_bold"
             android:text="@string/title"
             android:textSize="24sp"
-            android:textColor="@color/teal"
+            android:textColor="@color/white"
+            android:background="@color/teal"
             android:textAlignment="center"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -33,46 +34,53 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:orientation="horizontal"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvTitle" >
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTitle">
 
             <Button
                 android:id="@+id/btnSortByJerseyNumber"
                 android:layout_width="72dp"
-                android:layout_height="match_parent"
-                android:paddingHorizontal="16dp"
+                android:layout_height="0dp"
+                android:backgroundTint="@color/teal"
+                android:fontFamily="@font/montserrat_bold"
                 android:gravity="center"
                 android:orientation="horizontal"
+                android:paddingHorizontal="16dp"
                 android:text="@string/hash"
-                android:fontFamily="@font/montserrat_bold"
-                android:backgroundTint="@color/teal"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <Button
                 android:id="@+id/btnSortByName"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:paddingHorizontal="16dp"
+                android:backgroundTint="@color/teal"
+                android:fontFamily="@font/montserrat_bold"
                 android:gravity="center"
                 android:orientation="horizontal"
+                android:paddingHorizontal="16dp"
                 android:text="@string/name"
-                android:fontFamily="@font/montserrat_bold"
-                android:backgroundTint="@color/teal"
-                app:layout_constraintEnd_toStartOf="@id/btnSortByPosition"
-                app:layout_constraintStart_toEndOf="@id/btnSortByJerseyNumber" />
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnSortByPosition"
+                app:layout_constraintStart_toEndOf="@+id/btnSortByJerseyNumber"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <Button
                 android:id="@+id/btnSortByPosition"
                 android:layout_width="72dp"
                 android:layout_height="match_parent"
-                android:paddingHorizontal="16dp"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:text="@string/p"
                 android:backgroundTint="@color/teal"
                 android:fontFamily="@font/montserrat_bold"
-                app:layout_constraintEnd_toEndOf="parent" />
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp"
+                android:text="@string/p"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

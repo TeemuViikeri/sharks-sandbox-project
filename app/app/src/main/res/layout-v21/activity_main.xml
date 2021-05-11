@@ -10,17 +10,18 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp"
         tools:context=".MainActivity">
 
         <TextView
             android:id="@+id/tvTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:padding="16dp"
             android:fontFamily="@font/montserrat_bold"
             android:text="@string/title"
-            android:textSize="24sp"
-            android:textColor="@color/teal"
+            android:textSize="32sp"
+            android:textColor="@color/white"
+            android:background="@color/teal"
             android:textAlignment="center"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -28,205 +29,398 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/rosterButtonConstraint"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:orientation="horizontal"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvTitle" >
-
-            <Button
-                android:id="@+id/btnSortByJerseyNumber"
-                android:layout_width="72dp"
-                android:layout_height="match_parent"
-                android:paddingHorizontal="16dp"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:text="@string/hash"
-                android:fontFamily="@font/montserrat_bold"
-                android:backgroundTint="@color/teal"
-                app:layout_constraintEnd_toStartOf="@id/btnSortByName"
-                app:layout_constraintStart_toStartOf="parent" />
-
-            <Button
-                android:id="@+id/btnSortByName"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:paddingHorizontal="16dp"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:text="@string/name"
-                android:fontFamily="@font/montserrat_bold"
-                android:backgroundTint="@color/teal"
-                app:layout_constraintEnd_toStartOf="@id/btnSortByPosition"
-                app:layout_constraintStart_toEndOf="@id/btnSortByJerseyNumber" />
-
-            <Button
-                android:id="@+id/btnSortByPosition"
-                android:layout_width="72dp"
-                android:layout_height="match_parent"
-                android:paddingHorizontal="16dp"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:text="@string/p"
-                android:backgroundTint="@color/teal"
-                android:fontFamily="@font/montserrat_bold"
-                app:layout_constraintEnd_toEndOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvRoster"
-            android:layout_width="match_parent"
-            android:layout_height="500dp"
+            android:paddingVertical="18dp"
+            android:paddingHorizontal="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/rosterButtonConstraint" />
-
-        <TextView
-            android:id="@+id/tv_nextMatch"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:fontFamily="@font/montserrat_medium"
-            android:text="@string/next_match"
-            android:textAlignment="center"
-            android:textColor="@color/teal"
-            android:textSize="24sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/rvRoster" />
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/constraintLayout"
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_marginTop="24dp"
-            android:orientation="vertical"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_nextMatch">
+            app:layout_constraintTop_toBottomOf="@id/tvTitle">
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/nextMatchTeams"
+                android:id="@+id/rosterButtonConstraint"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                app:layout_constraintBottom_toTopOf="@+id/nextMatchRecords"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHeight_percent="0.33"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
-                    <TextView
-                        android:id="@+id/tvAway"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:fontFamily="@font/montserrat_medium"
-                        android:gravity="center"
-                        android:text="@string/away"
-                        android:textAlignment="center"
-                        android:textColor="@color/teal"
-                        android:textSize="16sp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintEnd_toStartOf="@id/tvHome"
-                        app:layout_constraintWidth_default="percent"
-                        app:layout_constraintWidth_percent="0.5" />
-
-                    <TextView
-                        android:id="@+id/tvHome"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:fontFamily="@font/montserrat_medium"
-                        android:gravity="center"
-                        android:text="@string/home"
-                        android:textAlignment="center"
-                        android:textColor="@color/teal"
-                        android:textSize="16sp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toEndOf="@id/tvAway"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintWidth_default="percent"
-                        app:layout_constraintWidth_percent="0.5" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/nextMatchRecords"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:orientation="horizontal"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/nextMatchTeams"
-                app:layout_constraintHeight_percent="0.33" >
-
-                <TextView
-                    android:id="@+id/tvAwayRecord"
-                    android:layout_width="0dp"
+                <Button
+                    android:id="@+id/btnSortByJerseyNumber"
+                    android:layout_width="72dp"
                     android:layout_height="match_parent"
-                    android:fontFamily="@font/montserrat_medium"
+                    android:background="@drawable/straight_borders"
+                    android:backgroundTint="@null"
+                    android:fontFamily="@font/montserrat_bold"
                     android:gravity="center"
-                    android:text="@string/away_record"
-                    android:textAlignment="center"
-                    android:textColor="@color/teal"
-                    android:textSize="16sp"
+                    android:text="@string/hash"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/tvHomeRecord"
-                    app:layout_constraintHorizontal_bias="0.0"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintWidth_default="percent"
-                    app:layout_constraintWidth_percent="0.5" />
+                    app:layout_constraintTop_toTopOf="parent" />
 
-                <TextView
-                    android:id="@+id/tvHomeRecord"
+                <Button
+                    android:id="@+id/btnSortByName"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:fontFamily="@font/montserrat_medium"
+                    android:background="@drawable/straight_borders"
+                    android:backgroundTint="@null"
+                    android:fontFamily="@font/montserrat_bold"
                     android:gravity="center"
-                    android:text="@string/home_record"
-                    android:textAlignment="center"
-                    android:textColor="@color/teal"
-                    android:textSize="16sp"
+                    android:letterSpacing="0.025"
+                    android:text="@string/name"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/btnSortByPosition"
+                    app:layout_constraintStart_toEndOf="@id/btnSortByJerseyNumber"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <Button
+                    android:id="@+id/btnSortByPosition"
+                    android:layout_width="72dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/straight_borders"
+                    android:backgroundTint="@null"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:gravity="center"
+                    android:text="@string/p"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.0"
-                    app:layout_constraintWidth_default="percent"
-                    app:layout_constraintWidth_percent="0.5" />
+                    app:layout_constraintTop_toTopOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/venueConstraint"
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvRoster"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:orientation="horizontal"
-                app:layout_constraintHeight_percent="0.34"
+                android:layout_height="500dp"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/nextMatchRecords">
+                app:layout_constraintTop_toBottomOf="@id/rosterButtonConstraint" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/nextMatchConstraint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:padding="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/rvRoster">
 
                 <TextView
-                    android:id="@+id/nextMatchVenue"
+                    android:id="@+id/tv_nextMatch"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:fontFamily="@font/montserrat_medium"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:text="@string/home_record"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:letterSpacing="0.025"
+                    android:text="@string/next_match"
                     android:textAlignment="center"
                     android:textColor="@color/teal"
-                    android:textSize="16sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:textSize="24sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvNextMatchDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat_italic"
+                    android:text="@string/matchdate"
+                    android:textAlignment="center"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_nextMatch"
+                    tools:layout_editor_absoluteX="16dp" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/nextMatchInfoConstraint"
+                    android:layout_width="match_parent"
+                    android:layout_height="150dp"
+                    android:orientation="vertical"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tvNextMatchDate">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/nextMatchTeams"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:orientation="horizontal"
+                        app:layout_constraintBottom_toTopOf="@+id/nextMatchRecords"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHeight_percent="0.4"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <TextView
+                            android:id="@+id/tvNextAway"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:fontFamily="@font/montserrat_extrabold"
+                            android:gravity="bottom|center_horizontal"
+                            android:letterSpacing="0.025"
+                            android:text="@string/away"
+                            android:textAlignment="center"
+                            android:textColor="@color/teal"
+                            android:textSize="24sp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@id/tvNextHome"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintWidth_default="percent"
+                            app:layout_constraintWidth_percent="0.5" />
+
+                        <TextView
+                            android:id="@+id/tvNextHome"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:fontFamily="@font/montserrat_extrabold"
+                            android:gravity="bottom|center_horizontal"
+                            android:letterSpacing="0.025"
+                            android:text="@string/home"
+                            android:textColor="@color/teal"
+                            android:textSize="24sp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toEndOf="@id/tvNextAway"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintWidth_default="percent"
+                            app:layout_constraintWidth_percent="0.5" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/nextMatchRecords"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:orientation="horizontal"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHeight_percent="0.3"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/nextMatchTeams">
+
+                        <TextView
+                            android:id="@+id/tvNextAwayRecord"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:fontFamily="@font/montserrat_medium"
+                            android:gravity="top|center_horizontal"
+                            android:letterSpacing="0.025"
+                            android:text="@string/away_record"
+                            android:textColor="@color/teal"
+                            android:textSize="16sp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@+id/tvNextHomeRecord"
+                            app:layout_constraintHorizontal_bias="0.0"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintWidth_default="percent"
+                            app:layout_constraintWidth_percent="0.5" />
+
+                        <TextView
+                            android:id="@+id/tvNextHomeRecord"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:fontFamily="@font/montserrat_medium"
+                            android:gravity="top|center_horizontal"
+                            android:letterSpacing="0.025"
+                            android:text="@string/home_record"
+                            android:textAlignment="center"
+                            android:textColor="@color/teal"
+                            android:textSize="16sp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintVertical_bias="0.0"
+                            app:layout_constraintWidth_default="percent"
+                            app:layout_constraintWidth_percent="0.5" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/nextVenueConstraint"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:orientation="horizontal"
+                        app:layout_constraintHeight_percent="0.3"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/nextMatchRecords">
+
+                        <TextView
+                            android:id="@+id/nextMatchVenue"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:fontFamily="@font/montserrat_medium"
+                            android:gravity="center"
+                            android:letterSpacing="0.025"
+                            android:orientation="horizontal"
+                            android:text="@string/venue"
+                            android:textAlignment="center"
+                            android:textColor="@color/teal"
+                            android:textSize="16sp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/previousMatchConstraint"
+                android:layout_width="match_parent"
+                android:layout_height="500dp"
+                android:padding="16dp"
+                android:layout_marginTop="24dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/nextMatchConstraint">
+
+                <TextView
+                    android:id="@+id/tv_previousMatch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:letterSpacing="0.025"
+                    android:text="@string/previous_match"
+                    android:textAlignment="center"
+                    android:textColor="@color/teal"
+                    android:textSize="24sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvPreviousMatchDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat_italic"
+                    android:textAlignment="center"
+                    android:text="@string/matchdate"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_previousMatch"
+                    tools:layout_editor_absoluteX="16dp" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/previousMatchInfoConstraint"
+                    android:layout_width="match_parent"
+                    android:layout_height="125dp"
+                    android:orientation="vertical"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tvPreviousMatchDate">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/previousMatchTeams"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:orientation="horizontal"
+                        app:layout_constraintHeight_percent="0.5"
+                        app:layout_constraintBottom_toTopOf="@+id/previousMatchResults"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <TextView
+                            android:id="@+id/tvPreviousAway"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:fontFamily="@font/montserrat_extrabold"
+                            android:gravity="bottom|center_horizontal"
+                            android:letterSpacing="0.025"
+                            android:text="@string/away"
+                            android:textAlignment="center"
+                            android:textColor="@color/teal"
+                            android:textSize="24sp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@id/tvPreviousHome"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintWidth_default="percent"
+                            app:layout_constraintWidth_percent="0.5" />
+
+                        <TextView
+                            android:id="@+id/tvPreviousHome"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:fontFamily="@font/montserrat_extrabold"
+                            android:gravity="bottom|center_horizontal"
+                            android:letterSpacing="0.025"
+                            android:text="@string/home"
+                            android:textColor="@color/teal"
+                            android:textSize="24sp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toEndOf="@id/tvPreviousAway"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintWidth_default="percent"
+                            app:layout_constraintWidth_percent="0.5" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/previousMatchResults"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        app:layout_constraintHeight_percent="0.5"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/previousMatchTeams">
+
+                        <TextView
+                            android:id="@+id/tvPreviousAwayResult"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:fontFamily="@font/montserrat_medium"
+                            android:gravity="top|center_horizontal"
+                            android:letterSpacing="0.025"
+                            android:text="@string/away_result"
+                            android:textColor="@color/teal"
+                            android:textSize="16sp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@+id/tvPreviousHomeResult"
+                            app:layout_constraintHorizontal_bias="0.0"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintWidth_default="percent"
+                            app:layout_constraintWidth_percent="0.5" />
+
+                        <TextView
+                            android:id="@+id/tvPreviousHomeResult"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:fontFamily="@font/montserrat_medium"
+                            android:gravity="top|center_horizontal"
+                            android:letterSpacing="0.025"
+                            android:text="@string/home_result"
+                            android:textAlignment="center"
+                            android:textColor="@color/teal"
+                            android:textSize="16sp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintVertical_bias="0.0"
+                            app:layout_constraintWidth_default="percent"
+                            app:layout_constraintWidth_percent="0.5" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <VideoView
+                    android:id="@+id/previousMatchExtendedHighlights"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    android:scaleType="fitXY"
+                    app:layout_constraintTop_toBottomOf="@id/previousMatchInfoConstraint"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

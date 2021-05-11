@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Team(
+    val id: Int = 0,
     val name: String = "",
     val abbreviation: String = "",
     val teamName: String = "",

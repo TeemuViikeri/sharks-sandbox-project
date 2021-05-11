@@ -1,13 +1,17 @@
 package fi.tuni.tamk.tiko.myapplication
 
+import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
 
 class RosterAdapter(
-    private var players: List<Player>
+    private var players: List<Player>,
+    private val context: Context
 ) : RecyclerView.Adapter<RosterAdapter.RosterViewHolder>() {
 
     /**
@@ -40,6 +44,14 @@ class RosterAdapter(
         holder.tvPlayerNumber.text = player.jerseyNumber
         holder.tvPlayerName.text = player.person.fullName
         holder.tvPlayerPosition.text = player.position.abbreviation
+
+        holder.tvPlayerName.isClickable = true
+        holder.tvPlayerName.setOnClickListener {
+            val playerIntent = Intent(context, PlayerActivity::class.java).apply {
+                putExtra("url", player.person.link)
+            }
+            context.startActivity(playerIntent)
+        }
     }
 
     /**
