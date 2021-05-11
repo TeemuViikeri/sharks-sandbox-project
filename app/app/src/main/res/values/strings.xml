@@ -10,4 +10,8 @@
     <string name="home">Home</string>
     <string name="away_record">Away record</string>
     <string name="home_record">Home record</string>
+    <string name="hash">#</string>
+    <string name="name">Name</string>
+    <string name="pos">POS</string>
+    <string name="p">p</string>
 </resources>
