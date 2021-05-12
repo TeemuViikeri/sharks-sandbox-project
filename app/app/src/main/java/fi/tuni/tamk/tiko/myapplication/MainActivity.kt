@@ -198,13 +198,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Lifecycle method. Sets video playback to the playback position
+     * the video was left when onPause() was called.
+     */
     override fun onResume() {
         super.onResume()
         setVideoPlayerToPosition(extendedHighlights)
     }
 
     /**
-     * Pauses the video when build version is less than
+     * Lifecycle method. Pauses the video when build version is less than
      * Android N / Android 7.0 / API 24 and onPause() is called. Also saves
      * current video playback position.
      *
@@ -233,7 +237,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
+     * Saves playback position into a state Bundle.
      *
+     * @param outState The bundle where saved data is being put.
      */
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
