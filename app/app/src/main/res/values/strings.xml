@@ -25,6 +25,6 @@
     <string name="height">Height</string>
     <string name="weight">Weight</string>
     <string name="age">Age</string>
-    <string name="shoots">Shoots</string>
+    <string name="shootscatches">Shoots / Catches</string>
     <string name="primary_position">Primary position</string>
 </resources>
