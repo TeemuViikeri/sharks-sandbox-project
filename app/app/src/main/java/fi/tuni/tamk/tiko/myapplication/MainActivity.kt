@@ -1,12 +1,10 @@
 package fi.tuni.tamk.tiko.myapplication
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
-import android.widget.MediaController
-import android.widget.TextView
-import android.widget.VideoView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -15,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -45,6 +44,11 @@ class MainActivity : AppCompatActivity() {
     private val rosterExpand: String = "team.roster"
 
     /**
+     * Schedule endpoint for fetching media.
+     */
+    private val scheduleEndpoint: String = "/api/v1/schedule"
+
+    /**
      * Expand modifier that returns details of the upcoming game for a team.
      */
     private val scheduleNextExpand: String = "team.schedule.next"
@@ -56,29 +60,32 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Endpoint that returns post-game stats of both teams and their players.
+     *
+     * Possibly used later in development.
      */
     val boxscoreEndpoint: String = "/api/v1game/$gameID/boxscore"
 
     /**
      * Endpoint that returns basic post-game stats of
      * each period and last on-ice information.
+     *
+     * Possibly used later in development.
      */
     val linescoreEndpoint: String = "/api/v1game/$gameID/linescore"
 
     /**
      * Content endpoint that includes game media including
      * previews, videos, pictures etc.
+     *
+     * Possibly used later in development.
      */
     val contentEndpoint: String = "/api/v1game/$gameID/content"
 
     /**
-     * Schedule endpoint for fetching media.
-     */
-    private val scheduleEndpoint: String = "/api/v1/schedule"
-
-    /**
      * Expand modifier that returns only editorial preview content.
      * Includes projected lineups via generated token objects.
+     *
+     * Possibly used later in development.
      */
     val previewContentExpand: String = "schedule.game.content.editorial.preview"
 
@@ -104,23 +111,51 @@ class MainActivity : AppCompatActivity() {
     private lateinit var rosterAdapter: RosterAdapter
 
     /**
+     * VideoView for showing extended highlights of a previous match.
+     */
+    private lateinit var extendedHighlights: VideoView
+
+    /**
+     * Variable which holds a video playback position over lifecycle states.
+     */
+    private var videoPlaybackPosition = 0
+
+    companion object {
+        /**
+         * Key for playback time in the instance state bundle.
+         */
+        const val PLAYBACK_TIME: String = "play_time"
+    }
+
+    /**
      * Lifecycle method. Makes the initial API calls to the NHL API to display
      * team roster info when application has been loaded after start.
      *
      * @param savedInstanceState Bundle state data that is used to create
-     * the initial activity.
+     * the initial activity. Includes video playback position.
      */
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        Log.d("videoplayback", "onCreate")
+
+        Log.d("videoplayback", savedInstanceState?.getInt(PLAYBACK_TIME).toString())
+
+        if (savedInstanceState != null) {
+            videoPlaybackPosition = savedInstanceState.getInt(PLAYBACK_TIME);
+        }
+
         title = findViewById(R.id.tvTitle)
         rvRoster = findViewById(R.id.rvRoster)
+        extendedHighlights = findViewById(R.id.previousMatchExtendedHighlights)
 
         val apiURL = "$baseURL$teamEndpoint$teamID?expand=" +
                 "$rosterExpand,$scheduleNextExpand,$schedulePreviousExpand"
 
         val http = HttpConnection()
+
         http.fetchAsync(apiURL, this) {
             // Get Team object from JSON
             val team = convertJsonToTeamObject(it)
@@ -158,10 +193,51 @@ class MainActivity : AppCompatActivity() {
             drawable?.let { dr -> divider.setDrawable(dr) }
             rvRoster.addItemDecoration(divider)
 
-            // Setup next match information
             setupNextMatchInfo(team)
             setupPreviousMatchInfo(team)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        setVideoPlayerToPosition(extendedHighlights)
+    }
+
+    /**
+     * Pauses the video when build version is less than
+     * Android N / Android 7.0 / API 24 and onPause() is called. Also saves
+     * current video playback position.
+     *
+     * In newer versions application may be paused via super.onPause() but
+     * the video may not be if multi-window or picture-in-picture mode is on.
+     * Pausing video at this moment also prevents sound from video playing
+     * after app has closed visually and before onStop() has been called.
+     */
+    override fun onPause() {
+        super.onPause()
+
+        videoPlaybackPosition = extendedHighlights.currentPosition
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            extendedHighlights.pause();
+        }
+    }
+
+    /**
+     * Lifecycle method. Stops video player and releases resources used
+     * in the VideoView when onStop() is called.
+     */
+    override fun onStop() {
+        super.onStop()
+        releaseVideoPlayer(extendedHighlights)
+    }
+
+    /**
+     *
+     */
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(PLAYBACK_TIME, videoPlaybackPosition)
     }
 
     /**
@@ -176,6 +252,12 @@ class MainActivity : AppCompatActivity() {
         return teamData.teams[0]
     }
 
+    /**
+     * Converts JSON data of a game schedule from NHL API to Jackson mapped Team object.
+     *
+     * @param json Returned JSON data from the NHL API's schedule endpoint.
+     * @return Converted GameScheduleData object.
+     */
     private fun convertJsonToScheduleObject(json: String): GameScheduleData {
         val mp = ObjectMapper()
         return mp.readValue(json, GameScheduleData::class.java)
@@ -218,10 +300,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Uses Calendar to get previous day from date given as an argument.
+     * Uses Calendar to get previous day from the extended date.
      *
-     * @param date The day you want to get previous date from.
-     * @return Previous day from date given as argument.
+     * @return Previous day from the extended date.
      */
     private fun java.util.Date.getPreviousDay(): java.util.Date {
         val cal = Calendar.getInstance()
@@ -229,6 +310,54 @@ class MainActivity : AppCompatActivity() {
         cal.add(Calendar.DAY_OF_YEAR, -1)
         return cal.time
     }
+
+    /**
+     * Sets URI path to video player and sets video to certain frame.
+     *
+     * @param player VideoView to be initialized.
+     * @param path URI path to video over the internet.
+     * @param frame Preview image frame.
+     */
+    private fun initializeVideoPlayer(player: VideoView, path: String, frame: Int) {
+        player.setVideoPath(path)
+        setVideoPlayerToPosition(player, frame)
+    }
+
+    /**
+     * Sets video to certain frame.
+     *
+     * @param player VideoView to be initialized.
+     * @param frame To what frame video is set.
+     */
+    private fun setVideoPlayerToPosition(player: VideoView, frame: Int = 1000) {
+        if (videoPlaybackPosition > 0) {
+            player.seekTo(videoPlaybackPosition)
+        } else {
+            player.seekTo(frame)
+        }
+    }
+
+    /**
+     * Stops video player and releases resources VideoView is using.
+     *
+     * @param player VideoView that will be stopped.
+     */
+    private fun releaseVideoPlayer(player: VideoView) {
+        player.stopPlayback()
+    }
+
+    /**
+     * Adds MediaController to VideoView.
+     *
+     * @param videoView VideoView that the MediaController is added on.
+     */
+    private fun addMediaController(videoView: VideoView) {
+        val mediaController = MediaController(this)
+        mediaController.setMediaPlayer(videoView)
+        videoView.setMediaController(mediaController);
+        mediaController.setAnchorView(extendedHighlights)
+    }
+
     /**
      * Sets up team's next match information to UI.
      *
@@ -310,7 +439,7 @@ class MainActivity : AppCompatActivity() {
         val homeTeam: TextView = findViewById(R.id.tvPreviousHome)
         val awayTeamResult: TextView = findViewById(R.id.tvPreviousAwayResult)
         val homeTeamResult: TextView = findViewById(R.id.tvPreviousHomeResult)
-        val extendedHighlights: VideoView = findViewById(R.id.previousMatchExtendedHighlights)
+        val venue: TextView = findViewById(R.id.previousMatchVenue)
 
         val previousGame = team.previousGameSchedule.dates[0].games[0]
 
@@ -344,7 +473,8 @@ class MainActivity : AppCompatActivity() {
         homeTeamResult.text = previousGame.teams.home.score.toString()
 
         val nextGameDate = team.nextGameSchedule.dates[0].date
-        val nextGameDateFormatted = nextGameDate.toDate("yyyy-MM-dd")?.getPreviousDay().let {
+        val nextGameDateFormatted =
+            nextGameDate.toDate("yyyy-MM-dd")?.getPreviousDay().let {
                 it1 -> it1?.formatTo("yyyy-MM-dd")
         }
 
@@ -353,20 +483,17 @@ class MainActivity : AppCompatActivity() {
                 "&startDate=$date&endDate=${nextGameDateFormatted}" +
                 "&expand=$mediaExpand"
 
-        Log.d("schedule", scheduleURL)
-
         http.fetchAsync(scheduleURL, this) {
             val schedule = convertJsonToScheduleObject(it)
             val game = schedule.dates[0].games[0]
             val media = game.content.media
             val path = media.epg[2].items[0].playbacks[2].url
             Log.d("schedule", path)
-            extendedHighlights.setVideoPath(path)
-            extendedHighlights.seekTo(1000)
-            val mediaController: MediaController = MediaController(this)
-            extendedHighlights.setMediaController(mediaController)
+            initializeVideoPlayer(extendedHighlights, path, 1000)
+            addMediaController(extendedHighlights)
         }
 
-
+        venue.text = "@ ${previousGame.venue.name}"
     }
+
 }

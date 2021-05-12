@@ -16,9 +16,15 @@
     <string name="p">p</string>
     <string name="matchdate">Match date</string>
     <string name="venue">Venue</string>
-    <string name="number">number</string>
+    <string name="number">Number</string>
     <string name="team">Team</string>
     <string name="previous_match">Previous match</string>
     <string name="away_result">Away result</string>
     <string name="home_result">Home result</string>
+    <string name="nationality">Nationality</string>
+    <string name="height">Height</string>
+    <string name="weight">Weight</string>
+    <string name="age">Age</string>
+    <string name="shoots">Shoots</string>
+    <string name="primary_position">Primary position</string>
 </resources>

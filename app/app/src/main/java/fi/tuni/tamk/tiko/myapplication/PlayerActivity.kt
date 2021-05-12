@@ -27,13 +27,24 @@ class PlayerActivity : AppCompatActivity() {
         val playerURL = "$baseURL$playerLink"
 
         val http = HttpConnection()
+
         http.fetchAsync(playerURL, this) {
             val player = convertJsonToPlayerObject(it)
             title.text = player.fullName
             val number: TextView = findViewById(R.id.tvPlayerInfoNumber)
-            val team: TextView = findViewById(R.id.tvPlayerInfoTeam)
             number.text = player.primaryNumber
-            team.text = player.currentTeam.name
+            val age: TextView = findViewById(R.id.tvPlayerInfoAge)
+            age.text = player.currentAge.toString()
+            val nationality: TextView = findViewById(R.id.tvPlayerInfoNationality)
+            nationality.text = player.nationality
+            val height: TextView = findViewById(R.id.tvPlayerInfoHeight)
+            height.text = player.height
+            val weight: TextView = findViewById(R.id.tvPlayerInfoWeight)
+            weight.text = player.weight.toString()
+            val shoots: TextView = findViewById(R.id.tvPlayerInfoShoots)
+            shoots.text = player.shootsCatches
+            val primaryPosition: TextView = findViewById(R.id.tvPlayerInfoPosition)
+            primaryPosition.text = player.primaryPosition.name
         }
     }
 
