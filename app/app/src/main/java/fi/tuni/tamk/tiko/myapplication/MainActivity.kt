@@ -139,10 +139,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        Log.d("videoplayback", "onCreate")
-
-        Log.d("videoplayback", savedInstanceState?.getInt(PLAYBACK_TIME).toString())
-
         if (savedInstanceState != null) {
             videoPlaybackPosition = savedInstanceState.getInt(PLAYBACK_TIME);
         }
@@ -370,62 +366,64 @@ class MainActivity : AppCompatActivity() {
      * @param team The team which info should be shown.
      */
     private fun setupNextMatchInfo(team: Team) {
-        val date = team.nextGameSchedule.dates[0].date
-        val formattedDate = date.toDate("yyyy-MM-dd").let {
-                it1 -> it1?.formatTo("dd MMM yyyy")
-        }
-        val matchDate: TextView = findViewById(R.id.tvNextMatchDate)
-        matchDate.text = formattedDate.toString()
-
-        val awayTeam: TextView = findViewById(R.id.tvNextAway)
-        val homeTeam: TextView = findViewById(R.id.tvNextHome)
-        val awayTeamRecord: TextView = findViewById(R.id.tvNextAwayRecord)
-        val homeTeamRecord: TextView = findViewById(R.id.tvNextHomeRecord)
-        val nextMatchVenue: TextView = findViewById(R.id.nextMatchVenue)
-
-        val nextGame = team.nextGameSchedule.dates[0].games[0]
-
-        val isCurrentTeamAway: Boolean =
-            nextGame.teams.away.team.id == team.id
-
-        val http = HttpConnection()
-
-        if (isCurrentTeamAway) {
-            awayTeam.text = team.abbreviation
-
-            val otherTeamId = nextGame.teams.home.team.id
-            val otherTeamUrl = "$baseURL$teamEndpoint$otherTeamId"
-
-            http.fetchAsync(otherTeamUrl, this) {
-                val otherTeam = convertJsonToTeamObject(it)
-                homeTeam.text = otherTeam.abbreviation
+        if (team.nextGameSchedule.dates.isNotEmpty()) {
+            val date = team.nextGameSchedule.dates[0].date
+            val formattedDate = date.toDate("yyyy-MM-dd").let {
+                    it1 -> it1?.formatTo("dd MMM yyyy")
             }
-        } else {
-            val otherTeamId = nextGame.teams.away.team.id
-            val otherTeamUrl = "$baseURL$teamEndpoint$otherTeamId"
+            val matchDate: TextView = findViewById(R.id.tvNextMatchDate)
+            matchDate.text = formattedDate.toString()
 
-            homeTeam.text = team.abbreviation
-            http.fetchAsync(otherTeamUrl, this) {
-                val otherTeam = convertJsonToTeamObject(it)
-                awayTeam.text = otherTeam.abbreviation
+            val awayTeam: TextView = findViewById(R.id.tvNextAway)
+            val homeTeam: TextView = findViewById(R.id.tvNextHome)
+            val awayTeamRecord: TextView = findViewById(R.id.tvNextAwayRecord)
+            val homeTeamRecord: TextView = findViewById(R.id.tvNextHomeRecord)
+            val nextMatchVenue: TextView = findViewById(R.id.nextMatchVenue)
+
+            val nextGame = team.nextGameSchedule.dates[0].games[0]
+
+            val isCurrentTeamAway: Boolean =
+                nextGame.teams.away.team.id == team.id
+
+            val http = HttpConnection()
+
+            if (isCurrentTeamAway) {
+                awayTeam.text = team.abbreviation
+
+                val otherTeamId = nextGame.teams.home.team.id
+                val otherTeamUrl = "$baseURL$teamEndpoint$otherTeamId"
+
+                http.fetchAsync(otherTeamUrl, this) {
+                    val otherTeam = convertJsonToTeamObject(it)
+                    homeTeam.text = otherTeam.abbreviation
+                }
+            } else {
+                val otherTeamId = nextGame.teams.away.team.id
+                val otherTeamUrl = "$baseURL$teamEndpoint$otherTeamId"
+
+                homeTeam.text = team.abbreviation
+                http.fetchAsync(otherTeamUrl, this) {
+                    val otherTeam = convertJsonToTeamObject(it)
+                    awayTeam.text = otherTeam.abbreviation
+                }
             }
+
+            val awayTeamSeasonRecords = nextGame.teams.away.leagueRecord
+            val awayWins = awayTeamSeasonRecords.wins.toString()
+            val awayLosses = awayTeamSeasonRecords.losses.toString()
+            val awayOts = awayTeamSeasonRecords.ot.toString()
+            awayTeamRecord.text = "$awayWins-$awayLosses-$awayOts"
+
+            val homeTeamSeasonRecords =
+                nextGame.teams.home.leagueRecord
+            val homeWins = homeTeamSeasonRecords.wins.toString()
+            val homeLosses = homeTeamSeasonRecords.losses.toString()
+            val homeOts = homeTeamSeasonRecords.ot.toString()
+            homeTeamRecord.text = "$homeWins-$homeLosses-$homeOts"
+
+            val matchVenue = nextGame.venue.name
+            nextMatchVenue.text = "@ $matchVenue"
         }
-
-        val awayTeamSeasonRecords = nextGame.teams.away.leagueRecord
-        val awayWins = awayTeamSeasonRecords.wins.toString()
-        val awayLosses = awayTeamSeasonRecords.losses.toString()
-        val awayOts = awayTeamSeasonRecords.ot.toString()
-        awayTeamRecord.text = "$awayWins-$awayLosses-$awayOts"
-
-        val homeTeamSeasonRecords =
-            nextGame.teams.home.leagueRecord
-        val homeWins = homeTeamSeasonRecords.wins.toString()
-        val homeLosses = homeTeamSeasonRecords.losses.toString()
-        val homeOts = homeTeamSeasonRecords.ot.toString()
-        homeTeamRecord.text = "$homeWins-$homeLosses-$homeOts"
-
-        val matchVenue = nextGame.venue.name
-        nextMatchVenue.text = "@ $matchVenue"
     }
 
     /**
@@ -478,15 +476,15 @@ class MainActivity : AppCompatActivity() {
         awayTeamResult.text = previousGame.teams.away.score.toString()
         homeTeamResult.text = previousGame.teams.home.score.toString()
 
-        val nextGameDate = team.nextGameSchedule.dates[0].date
-        val nextGameDateFormatted =
-            nextGameDate.toDate("yyyy-MM-dd")?.getPreviousDay().let {
-                it1 -> it1?.formatTo("yyyy-MM-dd")
-        }
+//        val nextGameDate = team.previousGameSchedule.dates[0].date
+//        val nextGameDateFormatted =
+//            nextGameDate.toDate("yyyy-MM-dd")?.getPreviousDay().let {
+//                it1 -> it1?.formatTo("yyyy-MM-dd")
+//        }
 
         val scheduleURL = "$baseURL$scheduleEndpoint" +
                 "?teamId=$teamID" +
-                "&startDate=$date&endDate=${nextGameDateFormatted}" +
+                "&startDate=$date&endDate=$date" +
                 "&expand=$mediaExpand"
 
         http.fetchAsync(scheduleURL, this) {
