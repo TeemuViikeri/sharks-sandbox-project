@@ -29,4 +29,7 @@
     <string name="primary_position">Primary position</string>
     <string name="no_next_matches_available">No next matches available</string>
     <string name="no_previous_matches_available">No previous matches available</string>
+    <string name="goals">Goals</string>
+    <string name="assists">Assists</string>
+    <string name="points">Points</string>
 </resources>
