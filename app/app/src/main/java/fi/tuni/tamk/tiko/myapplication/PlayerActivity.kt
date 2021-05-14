@@ -40,7 +40,7 @@ class PlayerActivity : AppCompatActivity() {
             val height: TextView = findViewById(R.id.tvPlayerInfoHeight)
             height.text = player.height
             val weight: TextView = findViewById(R.id.tvPlayerInfoWeight)
-            weight.text = player.weight.toString()
+            weight.text = "${player.weight} lbs"
             val shoots: TextView = findViewById(R.id.tvPlayerInfoShoots)
             shoots.text = player.shootsCatches
             val primaryPosition: TextView = findViewById(R.id.tvPlayerInfoPosition)

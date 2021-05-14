@@ -109,7 +109,7 @@
                 app:layout_constraintBottom_toTopOf="@id/matchDivider" >
 
                 <TextView
-                    android:id="@+id/tv_nextMatch"
+                    android:id="@+id/tvNextMatch"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/montserrat_bold"
@@ -129,7 +129,7 @@
                     android:fontFamily="@font/montserrat_italic"
                     android:text="@string/matchdate"
                     android:textAlignment="center"
-                    app:layout_constraintTop_toBottomOf="@+id/tv_nextMatch"
+                    app:layout_constraintTop_toBottomOf="@+id/tvNextMatch"
                     tools:layout_editor_absoluteX="16dp" />
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -291,7 +291,7 @@
                 app:layout_constraintTop_toBottomOf="@id/matchDivider">
 
                 <TextView
-                    android:id="@+id/tv_previousMatch"
+                    android:id="@+id/tvPreviousMatch"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/montserrat_bold"
@@ -311,7 +311,7 @@
                     android:fontFamily="@font/montserrat_italic"
                     android:text="@string/matchdate"
                     android:textAlignment="center"
-                    app:layout_constraintTop_toBottomOf="@+id/tv_previousMatch"
+                    app:layout_constraintTop_toBottomOf="@+id/tvPreviousMatch"
                     tools:layout_editor_absoluteX="16dp" />
 
                 <androidx.constraintlayout.widget.ConstraintLayout

@@ -1,11 +1,15 @@
 package fi.tuni.tamk.tiko.myapplication
 
 import android.annotation.SuppressLint
+import android.content.res.Resources
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -363,6 +367,9 @@ class MainActivity : AppCompatActivity() {
     /**
      * Sets up team's next match information to UI.
      *
+     * If there are no next matches available, a message will be shown
+     * regarding this situation.
+     *
      * @param team The team which info should be shown.
      */
     private fun setupNextMatchInfo(team: Team) {
@@ -423,81 +430,122 @@ class MainActivity : AppCompatActivity() {
 
             val matchVenue = nextGame.venue.name
             nextMatchVenue.text = "@ $matchVenue"
+        } else {
+            val nextMatchConstraint: ConstraintLayout = findViewById(R.id.nextMatchConstraint)
+            val nextMatchInfoConstraint: ConstraintLayout = findViewById(R.id.nextMatchInfoConstraint)
+            val tvNextMatchDate: TextView = findViewById(R.id.tvNextMatchDate)
+            nextMatchConstraint.removeView(nextMatchInfoConstraint)
+            nextMatchConstraint.removeView(tvNextMatchDate)
+
+            val tvNextMatch: TextView = findViewById(R.id.tvNextMatch)
+
+            val noMatchAvailable = TextView(this)
+            noMatchAvailable.id = View.generateViewId()
+            noMatchAvailable.text = resources.getString(R.string.no_next_matches_available)
+            nextMatchConstraint.addView(noMatchAvailable)
+
+            val set = ConstraintSet()
+            set.clone(nextMatchConstraint)
+            set.connect(noMatchAvailable.id, ConstraintSet.TOP, tvNextMatch.id, ConstraintSet.BOTTOM, 24)
+            set.connect(noMatchAvailable.id, ConstraintSet.LEFT, nextMatchConstraint.id, ConstraintSet.LEFT, 0)
+            set.connect(noMatchAvailable.id, ConstraintSet.RIGHT, nextMatchConstraint.id, ConstraintSet.RIGHT, 0)
+            set.applyTo(nextMatchConstraint)
         }
     }
 
     /**
-     * Sets up team's next match information to UI.
+     * Sets up team's previous match information to UI.
+     *
+     * If there are no previous matches available, a message will be shown
+     * regarding this situation.
      *
      * @param team The team which info should be shown.
      */
     private fun setupPreviousMatchInfo(team: Team) {
-        val date = team.previousGameSchedule.dates[0].date
-        val formattedDate = date.toDate("yyyy-MM-dd").let {
-                it1 -> it1?.formatTo("dd MMM yyyy")
-        }
-        val matchDate: TextView = findViewById(R.id.tvPreviousMatchDate)
-        matchDate.text = formattedDate.toString()
-
-        val awayTeam: TextView = findViewById(R.id.tvPreviousAway)
-        val homeTeam: TextView = findViewById(R.id.tvPreviousHome)
-        val awayTeamResult: TextView = findViewById(R.id.tvPreviousAwayResult)
-        val homeTeamResult: TextView = findViewById(R.id.tvPreviousHomeResult)
-        val venue: TextView = findViewById(R.id.previousMatchVenue)
-
-        val previousGame = team.previousGameSchedule.dates[0].games[0]
-
-        val isCurrentTeamAway: Boolean =
-            previousGame.teams.away.team.id == team.id
-
-        val http = HttpConnection()
-
-        if (isCurrentTeamAway) {
-            awayTeam.text = team.abbreviation
-
-            val otherTeamId = previousGame.teams.home.team.id
-            val otherTeamUrl = "$baseURL$teamEndpoint$otherTeamId"
-
-            http.fetchAsync(otherTeamUrl, this) {
-                val otherTeam = convertJsonToTeamObject(it)
-                homeTeam.text = otherTeam.abbreviation
+        if (team.previousGameSchedule.dates.isNotEmpty()) {
+            val date = team.previousGameSchedule.dates[0].date
+            val formattedDate = date.toDate("yyyy-MM-dd").let { it1 ->
+                it1?.formatTo("dd MMM yyyy")
             }
+            val matchDate: TextView = findViewById(R.id.tvPreviousMatchDate)
+            matchDate.text = formattedDate.toString()
+
+            val awayTeam: TextView = findViewById(R.id.tvPreviousAway)
+            val homeTeam: TextView = findViewById(R.id.tvPreviousHome)
+            val awayTeamResult: TextView = findViewById(R.id.tvPreviousAwayResult)
+            val homeTeamResult: TextView = findViewById(R.id.tvPreviousHomeResult)
+            val venue: TextView = findViewById(R.id.previousMatchVenue)
+
+            val previousGame = team.previousGameSchedule.dates[0].games[0]
+
+            val isCurrentTeamAway: Boolean =
+                previousGame.teams.away.team.id == team.id
+
+            val http = HttpConnection()
+
+            if (isCurrentTeamAway) {
+                awayTeam.text = team.abbreviation
+
+                val otherTeamId = previousGame.teams.home.team.id
+                val otherTeamUrl = "$baseURL$teamEndpoint$otherTeamId"
+
+                http.fetchAsync(otherTeamUrl, this) {
+                    val otherTeam = convertJsonToTeamObject(it)
+                    homeTeam.text = otherTeam.abbreviation
+                }
+            } else {
+                val otherTeamId = previousGame.teams.away.team.id
+                val otherTeamUrl = "$baseURL$teamEndpoint$otherTeamId"
+
+                homeTeam.text = team.abbreviation
+                http.fetchAsync(otherTeamUrl, this) {
+                    val otherTeam = convertJsonToTeamObject(it)
+                    awayTeam.text = otherTeam.abbreviation
+                }
+            }
+
+            awayTeamResult.text = previousGame.teams.away.score.toString()
+            homeTeamResult.text = previousGame.teams.home.score.toString()
+
+            val scheduleURL = "$baseURL$scheduleEndpoint" +
+                    "?teamId=$teamID" +
+                    "&startDate=$date&endDate=$date" +
+                    "&expand=$mediaExpand"
+
+            http.fetchAsync(scheduleURL, this) {
+                val schedule = convertJsonToScheduleObject(it)
+                val game = schedule.dates[0].games[0]
+                val media = game.content.media
+                val path = media.epg[2].items[0].playbacks[2].url
+                Log.d("schedule", path)
+                initializeVideoPlayer(extendedHighlights, path, 1000)
+                addMediaController(extendedHighlights)
+            }
+
+            venue.text = "@ ${previousGame.venue.name}"
         } else {
-            val otherTeamId = previousGame.teams.away.team.id
-            val otherTeamUrl = "$baseURL$teamEndpoint$otherTeamId"
+            val previousMatchConstraint: ConstraintLayout = findViewById(R.id.previousMatchConstraint)
+            val tvPreviousMatchDate: TextView = findViewById(R.id.tvPreviousMatchDate)
+            val previousMatchInfoConstraint: ConstraintLayout = findViewById(R.id.previousMatchInfoConstraint)
+            val previousMatchExtendedHighlights: VideoView = findViewById(R.id.previousMatchExtendedHighlights)
 
-            homeTeam.text = team.abbreviation
-            http.fetchAsync(otherTeamUrl, this) {
-                val otherTeam = convertJsonToTeamObject(it)
-                awayTeam.text = otherTeam.abbreviation
-            }
+            previousMatchConstraint.removeView(tvPreviousMatchDate)
+            previousMatchConstraint.removeView(previousMatchInfoConstraint)
+            previousMatchConstraint.removeView(previousMatchExtendedHighlights)
+
+            val tvPreviousMatch: TextView = findViewById(R.id.tvPreviousMatch)
+
+            val noMatchAvailable = TextView(this)
+            noMatchAvailable.id = View.generateViewId()
+            noMatchAvailable.text = resources.getString(R.string.no_previous_matches_available)
+            previousMatchConstraint.addView(noMatchAvailable)
+
+            val set = ConstraintSet()
+            set.clone(previousMatchConstraint)
+            set.connect(noMatchAvailable.id, ConstraintSet.TOP, tvPreviousMatch.id, ConstraintSet.BOTTOM, 24)
+            set.connect(noMatchAvailable.id, ConstraintSet.LEFT, previousMatchConstraint.id, ConstraintSet.LEFT, 0)
+            set.connect(noMatchAvailable.id, ConstraintSet.RIGHT, previousMatchConstraint.id, ConstraintSet.RIGHT, 0)
+            set.applyTo(previousMatchConstraint)
         }
-
-        awayTeamResult.text = previousGame.teams.away.score.toString()
-        homeTeamResult.text = previousGame.teams.home.score.toString()
-
-//        val nextGameDate = team.previousGameSchedule.dates[0].date
-//        val nextGameDateFormatted =
-//            nextGameDate.toDate("yyyy-MM-dd")?.getPreviousDay().let {
-//                it1 -> it1?.formatTo("yyyy-MM-dd")
-//        }
-
-        val scheduleURL = "$baseURL$scheduleEndpoint" +
-                "?teamId=$teamID" +
-                "&startDate=$date&endDate=$date" +
-                "&expand=$mediaExpand"
-
-        http.fetchAsync(scheduleURL, this) {
-            val schedule = convertJsonToScheduleObject(it)
-            val game = schedule.dates[0].games[0]
-            val media = game.content.media
-            val path = media.epg[2].items[0].playbacks[2].url
-            Log.d("schedule", path)
-            initializeVideoPlayer(extendedHighlights, path, 1000)
-            addMediaController(extendedHighlights)
-        }
-
-        venue.text = "@ ${previousGame.venue.name}"
     }
-
 }
