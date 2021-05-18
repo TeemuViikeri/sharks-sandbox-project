@@ -33,4 +33,7 @@
     <string name="goals">G</string>
     <string name="assists">A</string>
     <string name="points">P</string>
+    <string name="lbs">%1$d lbs</string>
+    <string name="record">%1$d-%2$d-%3$d</string>
+    <string name="match_venue">%1$s %2$s</string>
 </resources>

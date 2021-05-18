@@ -6,40 +6,26 @@ import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
-import java.util.*
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.github.mikephil.charting.formatter.ValueFormatter
+import org.joda.time.DateTime
 
 
 class PlayerActivity : AppCompatActivity() {
 
     /**
-     * Base URL for the NHL API that will be expanded by endpoints.
-     */
-    private val baseURL: String = "https://statsapi.web.nhl.com"
-
-    /**
-     *
-     */
-    private val statsSingleSeasonURL: String = "?stats=statsSingleSeason&season="
-
-    /**
-     *
-     */
-    private lateinit var currentSeason: String
-
-    /**
-     *
-     */
-    private val currentSeasonEndpoint: String = "https://statsapi.web.nhl.com/api/v1/seasons/current"
-
-    /**
      * Title text view for the activity. Displays a player's name.
      */
     private lateinit var title: TextView
+
+    /**
+     * Variable for holding current season as String (i.e. 20202021).
+     */
+    private lateinit var currentSeason: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,61 +34,43 @@ class PlayerActivity : AppCompatActivity() {
 
         val intent = intent
         val playerLink = intent.getStringExtra("url").toString()
-        val playerURL = "$baseURL$playerLink"
+        val playerURL = "${UrlCompanion.BASE_URL}$playerLink"
 
         val http = HttpConnection()
+        val converter = JsonConverter()
 
-        http.fetchAsync(currentSeasonEndpoint, this) {
-            val season = convertJsonToSeasonObject(it)
+        http.fetchAsync(
+            UrlCompanion.CURRENT_SEASON_ENDPOINT,
+            this
+        ) { seasonJson ->
+            val season = converter.convertJsonToSeasonObject(seasonJson)
             currentSeason = season.seasonId
-            setupPlayerChart()
 
             http.fetchAsync(playerURL, this) { playerJson ->
-                val player = convertJsonToPlayerObject(playerJson)
+                val player = converter.convertJsonToPlayerObject(playerJson)
                 setupBasicPlayerInfo(player)
                 setupBasicPlayerStats(playerURL)
+
+                val gameLogURL = playerURL +
+                        UrlCompanion.STATS_ENDPOINT +
+                        UrlCompanion.STATS_GAME_LOG +
+                        currentSeason
+
+                http.fetchAsync(gameLogURL, this) { gameLogJson ->
+                    val gameLogData =
+                        converter.convertJsonToStatsObject(gameLogJson)
+                    val gameLogs = gameLogData.splits.asReversed()
+                    val entries = getEntries(gameLogs)
+                    setupPlayerChart(entries)
+                }
             }
         }
     }
 
     /**
-     * Converts JSON data of a player from NHL API to Jackson mapped Player object.
+     * Setups basic player info on the player profile.
      *
-     * @param json Returned JSON data from the NHL API's player endpoint.
-     * @return Converted Player object.
-     */
-    private fun convertJsonToPlayerObject(json: String): People {
-        val mp = ObjectMapper()
-        val playerData: PeopleData = mp.readValue(json, PeopleData::class.java)
-        return playerData.people[0]
-    }
-
-    /**
-     * Converts JSON data of a player from NHL API to Jackson mapped Player object.
-     *
-     * @param json Returned JSON data from the NHL API's player endpoint.
-     * @return Converted Player object.
-     */
-    private fun convertJsonToSeasonObject(json: String): Season {
-        val mp = ObjectMapper()
-        val seasonsData: Seasons = mp.readValue(json, Seasons::class.java)
-        return seasonsData.seasons[0]
-    }
-
-    /**
-     * Converts JSON data of a player from NHL API to Jackson mapped Player object.
-     *
-     * @param json Returned JSON data from the NHL API's player endpoint.
-     * @return Converted Player object.
-     */
-    private fun convertJsonToStatsObject(json: String): StatsInfo {
-        val mp = ObjectMapper()
-        val statsData: Stats = mp.readValue(json, Stats::class.java)
-        return statsData.stats[0]
-    }
-
-    /**
-     *
+     * @param player People object that holds the data to be displayed.
      */
     private fun setupBasicPlayerInfo(player: People) {
         title.text = player.fullName
@@ -115,7 +83,7 @@ class PlayerActivity : AppCompatActivity() {
         val height: TextView = findViewById(R.id.tvPlayerInfoHeight)
         height.text = player.height
         val weight: TextView = findViewById(R.id.tvPlayerInfoWeight)
-        weight.text = "${player.weight} lbs"
+        weight.text = resources.getString(R.string.lbs, player.weight)
         val shoots: TextView = findViewById(R.id.tvPlayerInfoShoots)
         shoots.text = player.shootsCatches
         val primaryPosition: TextView = findViewById(R.id.tvPlayerInfoPosition)
@@ -123,7 +91,10 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     /**
+     * Setups basic player stats on the player profile:
+     * games played, goals, assists, points.
      *
+     * @param playerURL Player URL used to create fetch URL for this function.
      */
     private fun setupBasicPlayerStats(playerURL: String) {
         val games: TextView = findViewById(R.id.tvPlayerBasicGamesNumber)
@@ -131,12 +102,16 @@ class PlayerActivity : AppCompatActivity() {
         val assists: TextView = findViewById(R.id.tvPlayerBasicAssistsNumber)
         val points: TextView = findViewById(R.id.tvPlayerBasicPointsNumber)
 
-        val playerSeasonStatsURL = "$playerURL/stats$statsSingleSeasonURL$currentSeason"
+        val playerSeasonStatsURL = playerURL +
+                UrlCompanion.STATS_ENDPOINT +
+                UrlCompanion.STATS_SINGLE_SEASON +
+                currentSeason
 
         val http = HttpConnection()
+        val converter = JsonConverter()
 
         http.fetchAsync(playerSeasonStatsURL, this) {
-            val stats = convertJsonToStatsObject(it)
+            val stats = converter.convertJsonToStatsObject(it)
             val playerStats = stats.splits[0].stat
             games.text = playerStats.games.toString()
             goals.text = playerStats.goals.toString()
@@ -146,41 +121,121 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     /**
+     * Returns entries of player's points per months from season game logs.
      *
+     * @param gameLogs Game logs that include game dates.
+     * @return List of BarEntries for a chart.
      */
-    private fun getBarEntries() : ArrayList<BarEntry> {
-        val barEntries = ArrayList<BarEntry>()
+    private fun getEntries(gameLogs: List<Split>) : MutableList<BarEntry> {
+        val entries: MutableList<BarEntry> = mutableListOf()
 
-        barEntries.add(BarEntry(1f, 4f))
-        barEntries.add(BarEntry(2f, 6f))
-        barEntries.add(BarEntry(3f, 8f))
-        barEntries.add(BarEntry(4f, 2f))
-        barEntries.add(BarEntry(5f, 4f))
-        barEntries.add(BarEntry(6f, 1f))
+        val formatter = DateStringFormatter()
 
-        Log.d("chart", barEntries.toString())
+        var currentMonth = 0
+        var pointsPerEntry = 0
 
-        return barEntries
+        gameLogs.forEach {
+            Log.d("chart", it.toString())
+            val gameDate = formatter.toDate(it.date, "yyyy-MM-dd")
+            val dateTime = DateTime(gameDate)
+            val month = dateTime.toString("MM").toInt() - 1
+
+            val gamePoints = it.stat.points
+
+            if (currentMonth != month) {
+                val entry = BarEntry(
+                    currentMonth.toFloat(), pointsPerEntry.toFloat()
+                )
+
+                entries.add(entry)
+
+                currentMonth = month
+                pointsPerEntry = 0
+            }
+
+            pointsPerEntry += gamePoints
+        }
+
+        val lastEntry = BarEntry(
+            currentMonth.toFloat(), pointsPerEntry.toFloat()
+        )
+
+        entries.add(lastEntry)
+
+        return entries
     }
 
     /**
+     * Returns correct amount of month labels corresponding to entries.
      *
+     * @param entries
+     * @return List of month labels.
      */
-    private fun setupPlayerChart() {
-        val entries = getBarEntries()
+    private fun getMonthLabels(entries: List<BarEntry>): List<String> {
+        val start = entries[0].x.toInt()
+        val end = entries.last().x.toInt() + 1
 
-        val barDataSet = BarDataSet(entries, "Points")
+        val months = listOf(
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec"
+        )
+
+        return months.subList(start, end)
+    }
+
+    /**
+     * Setups a stat chart on the player profile.
+     *
+     * @param entries Data for the chart.
+     */
+    private fun setupPlayerChart(entries: MutableList<BarEntry>) {
+        val barDataSet = BarDataSet(entries, "Points per month")
         barDataSet.valueTextColor = Color.WHITE
         barDataSet.valueTextSize = 16f
-        barDataSet.setColors(ContextCompat.getColor(this, R.color.teal))
+        barDataSet.color = ContextCompat.getColor(this, R.color.teal)
+        barDataSet.valueFormatter = object : ValueFormatter() {
+            override fun getFormattedValue(value: Float): String {
+                return value.toInt().toString()
+            }
+        }
 
         val data = BarData(barDataSet)
 
-        val barChart: BarChart = findViewById(R.id.playerStatsChart)
-        barChart.data = data
-        barChart.description.isEnabled = false
-        barChart.setDrawGridBackground(false)
-        barChart.setDrawBorders(false)
-        barChart.invalidate()
+        val chart: BarChart = findViewById(R.id.playerStatsChart)
+        chart.data = data
+        chart.description.isEnabled = false
+        chart.isHighlightFullBarEnabled = false
+        chart.setPinchZoom(false)
+
+        val xAxis = chart.xAxis
+        val xAxisLabels = getMonthLabels(entries)
+        xAxis.setDrawGridLines(false)
+        xAxis.granularity = 1f
+        xAxis.isGranularityEnabled = true
+        xAxis.valueFormatter = IndexAxisValueFormatter(xAxisLabels)
+
+        chart.axisLeft.setDrawGridLines(false)
+        chart.axisLeft.axisMinimum = 0f
+        chart.axisLeft.granularity = 1f
+        chart.axisRight.setDrawGridLines(false)
+        chart.axisRight.axisMinimum = 0f
+        chart.axisRight.granularity = 1f
+
+        chart.isHighlightFullBarEnabled = false
+        chart.isHighlightPerTapEnabled = false
+        chart.isHighlightPerDragEnabled = false
+        chart.setDrawValueAboveBar(false)
+        chart.setFitBars(true)
+        chart.invalidate()
     }
 }

@@ -1,7 +1,6 @@
 package fi.tuni.tamk.tiko.myapplication
 
-import android.annotation.SuppressLint
-import android.content.res.Resources
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -11,93 +10,18 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.fasterxml.jackson.databind.ObjectMapper
-import java.text.SimpleDateFormat
-import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
 
     /**
-     * Base URL for the NHL API that will be expanded by endpoints.
-     */
-    private val baseURL: String = "https://statsapi.web.nhl.com"
-
-    /**
      * San Jose Sharks team ID in the API.
      */
     private val teamID: Int = 28
-
-    /**
-     * Example game ID from the game between SJS and COL (4.5.2021)
-     */
-    private val gameID: Int = 2020020823
-
-    /**
-     * Team endpoint for the Sharks in the API.
-     */
-    private val teamEndpoint: String = "/api/v1/teams/"
-
-    /**
-     * Expand modifier for a team endpoint that shows roster of
-     * active players for the specified team.
-     */
-    private val rosterExpand: String = "team.roster"
-
-    /**
-     * Schedule endpoint for fetching media.
-     */
-    private val scheduleEndpoint: String = "/api/v1/schedule"
-
-    /**
-     * Expand modifier that returns details of the upcoming game for a team.
-     */
-    private val scheduleNextExpand: String = "team.schedule.next"
-
-    /**
-     * Expand modifier that returns details of the previous game for a team.
-     */
-    private val schedulePreviousExpand: String = "team.schedule.previous"
-
-    /**
-     * Endpoint that returns post-game stats of both teams and their players.
-     *
-     * Possibly used later in development.
-     */
-    val boxscoreEndpoint: String = "/api/v1game/$gameID/boxscore"
-
-    /**
-     * Endpoint that returns basic post-game stats of
-     * each period and last on-ice information.
-     *
-     * Possibly used later in development.
-     */
-    val linescoreEndpoint: String = "/api/v1game/$gameID/linescore"
-
-    /**
-     * Content endpoint that includes game media including
-     * previews, videos, pictures etc.
-     *
-     * Possibly used later in development.
-     */
-    val contentEndpoint: String = "/api/v1game/$gameID/content"
-
-    /**
-     * Expand modifier that returns only editorial preview content.
-     * Includes projected lineups via generated token objects.
-     *
-     * Possibly used later in development.
-     */
-    val previewContentExpand: String = "schedule.game.content.editorial.preview"
-
-    /**
-     * Expand modifier that returns only media content.
-     * Includes extended highlights.
-     */
-    private val mediaExpand: String = "schedule.game.content.media.epg"
 
     /**
      * Title text view for the activity. Displays an NHL team's name.
@@ -120,6 +44,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var extendedHighlights: VideoView
 
     /**
+     *
+     */
+    private lateinit var videoMediaController: MediaController
+
+    /**
      * Variable which holds a video playback position over lifecycle states.
      */
     private var videoPlaybackPosition = 0
@@ -138,41 +67,44 @@ class MainActivity : AppCompatActivity() {
      * @param savedInstanceState Bundle state data that is used to create
      * the initial activity. Includes video playback position.
      */
-    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         if (savedInstanceState != null) {
-            videoPlaybackPosition = savedInstanceState.getInt(PLAYBACK_TIME);
+            videoPlaybackPosition = savedInstanceState.getInt(PLAYBACK_TIME)
         }
 
         title = findViewById(R.id.tvTitle)
         rvRoster = findViewById(R.id.rvRoster)
         extendedHighlights = findViewById(R.id.previousMatchExtendedHighlights)
 
-        val apiURL = "$baseURL$teamEndpoint$teamID?expand=" +
-                "$rosterExpand,$scheduleNextExpand,$schedulePreviousExpand"
+        val apiURL = UrlCompanion.BASE_URL +
+                UrlCompanion.TEAM_ENDPOINT + "$teamID?expand=" +
+                UrlCompanion.ROSTER_EXPAND + "," +
+                UrlCompanion.SCHEDULE_NEXT_EXPAND + "," +
+                UrlCompanion.SCHEDULE_PREVIOUS_EXPAND
 
         val http = HttpConnection()
+        val converter = JsonConverter()
 
         http.fetchAsync(apiURL, this) {
-            // Get Team object from JSON
-            val team = convertJsonToTeamObject(it)
-            // Set title of the activity to be the name of the team
+            val team = converter.convertJsonToTeamObject(it)
+
             title.text = team.name
 
-            // Setup roster, Adapter and RecyclerView
             val roster = team.roster.roster
             rosterAdapter = RosterAdapter(roster, this)
             rosterAdapter.sortPlayersByJerseyNumber()
             rvRoster.adapter = rosterAdapter
             rvRoster.layoutManager = LinearLayoutManager(this)
 
-            // Setup roster buttons and their onClickListeners
-            val btnSortByJerseyNumber: Button = findViewById(R.id.btnSortByJerseyNumber)
-            val btnSortByName: Button = findViewById(R.id.btnSortByName)
-            val btnSortByPosition: Button = findViewById(R.id.btnSortByPosition)
+            val btnSortByJerseyNumber: Button =
+                findViewById(R.id.btnSortByJerseyNumber)
+            val btnSortByName: Button =
+                findViewById(R.id.btnSortByName)
+            val btnSortByPosition: Button =
+                findViewById(R.id.btnSortByPosition)
 
             btnSortByJerseyNumber.setOnClickListener {
                 rosterAdapter.sortPlayersByJerseyNumber()
@@ -187,9 +119,13 @@ class MainActivity : AppCompatActivity() {
             }
 
             // Setup roster list item dividers
-            val drawable = ContextCompat.getDrawable(this, R.drawable.roster_divider)
+            val drawable = ContextCompat.getDrawable(
+                this,
+                R.drawable.roster_divider
+            )
             val divider = DividerItemDecoration(
-                rvRoster.context, (rvRoster.layoutManager as LinearLayoutManager).orientation)
+                rvRoster.context,
+                (rvRoster.layoutManager as LinearLayoutManager).orientation)
             drawable?.let { dr -> divider.setDrawable(dr) }
             rvRoster.addItemDecoration(divider)
 
@@ -223,7 +159,7 @@ class MainActivity : AppCompatActivity() {
         videoPlaybackPosition = extendedHighlights.currentPosition
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            extendedHighlights.pause();
+            extendedHighlights.pause()
         }
     }
 
@@ -247,86 +183,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Converts JSON data of a team from NHL API to Jackson mapped Team object.
-     *
-     * @param json Returned JSON data from the NHL API's team endpoint.
-     * @return Converted Team object.
-     */
-    private fun convertJsonToTeamObject(json: String): Team {
-        val mp = ObjectMapper()
-        val teamData: TeamData = mp.readValue(json, TeamData::class.java)
-        return teamData.teams[0]
-    }
-
-    /**
-     * Converts JSON data of a game schedule from NHL API to Jackson mapped Team object.
-     *
-     * @param json Returned JSON data from the NHL API's schedule endpoint.
-     * @return Converted GameScheduleData object.
-     */
-    private fun convertJsonToScheduleObject(json: String): GameScheduleData {
-        val mp = ObjectMapper()
-        return mp.readValue(json, GameScheduleData::class.java)
-    }
-
-    /**
-     * Converts a date string into a parsed Date object.
-     *
-     * You can use this function to represent match dates in user's own
-     * date format and time zone.
-     *
-     * @param dateFormat Date format used in the parsed date.
-     * @param timeZone The time zone in which the parsed date should be in.
-     * @return Parsed Date object.
-     */
-    private fun String.toDate(
-        dateFormat: String = "yyyy-MM-dd HH:mm:ss",
-        timeZone: TimeZone = TimeZone.getTimeZone("UTC")
-    ): java.util.Date? {
-        val parser = SimpleDateFormat(dateFormat, Locale.getDefault())
-        parser.timeZone = timeZone
-        return parser.parse(this)
-    }
-
-    /**
-     * Formats a Date object into a string representation with preferred
-     * date format and time zone.
-     *
-     * @param dateFormat Preferred date format of the formatted date string.
-     * @param timeZone Time zone used in the formatting.
-     * @return String representation of a Date object.
-     */
-    private fun java.util.Date.formatTo(
-        dateFormat: String,
-        timeZone: TimeZone = TimeZone.getDefault()
-    ): String {
-        val formatter = SimpleDateFormat(dateFormat, Locale.getDefault())
-        formatter.timeZone = timeZone
-        return formatter.format(this)
-    }
-
-    /**
-     * Uses Calendar to get previous day from the extended date.
-     *
-     * @return Previous day from the extended date.
-     */
-    private fun java.util.Date.getPreviousDay(): java.util.Date {
-        val cal = Calendar.getInstance()
-        cal.time = this
-        cal.add(Calendar.DAY_OF_YEAR, -1)
-        return cal.time
-    }
-
-    /**
      * Sets URI path to video player and sets video to certain frame.
      *
-     * @param player VideoView to be initialized.
      * @param path URI path to video over the internet.
-     * @param frame Preview image frame.
      */
-    private fun initializeVideoPlayer(player: VideoView, path: String, frame: Int) {
-        player.setVideoPath(path)
-        setVideoPlayerToPosition(player, frame)
+    private fun initializeVideoPlayer(path: String) {
+        extendedHighlights.setVideoPath(path)
+        extendedHighlights.setOnPreparedListener {
+            setVideoPlayerToPosition(extendedHighlights, 1000)
+            addMediaController()
+            val scrollView: ScrollView = findViewById(R.id.scrollView)
+            scrollView.viewTreeObserver
+                .addOnScrollChangedListener {
+                    Log.d("scrolling", "scrolling")
+                    videoMediaController.hide()
+                }
+        }
+
     }
 
     /**
@@ -335,11 +208,25 @@ class MainActivity : AppCompatActivity() {
      * @param player VideoView to be initialized.
      * @param frame To what frame video is set.
      */
-    private fun setVideoPlayerToPosition(player: VideoView, frame: Int = 1000) {
+    private fun setVideoPlayerToPosition(player: VideoView, frame: Int = 1000)
+    {
         if (videoPlaybackPosition > 0) {
             player.seekTo(videoPlaybackPosition)
         } else {
             player.seekTo(frame)
+        }
+    }
+
+    /**
+     *
+     */
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            addMediaController()
+        } else {
+            addMediaController()
         }
     }
 
@@ -354,14 +241,11 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Adds MediaController to VideoView.
-     *
-     * @param videoView VideoView that the MediaController is added on.
      */
-    private fun addMediaController(videoView: VideoView) {
-        val mediaController = MediaController(this)
-        mediaController.setMediaPlayer(videoView)
-        videoView.setMediaController(mediaController);
-        mediaController.setAnchorView(extendedHighlights)
+    private fun addMediaController() {
+        videoMediaController = MyMediaController(this, extendedHighlights)
+        videoMediaController.setMediaPlayer(extendedHighlights)
+        extendedHighlights.setMediaController(videoMediaController)
     }
 
     /**
@@ -373,13 +257,20 @@ class MainActivity : AppCompatActivity() {
      * @param team The team which info should be shown.
      */
     private fun setupNextMatchInfo(team: Team) {
+        val tvNextMatchDate: TextView = findViewById(R.id.tvNextMatchDate)
+
         if (team.nextGameSchedule.dates.isNotEmpty()) {
             val date = team.nextGameSchedule.dates[0].date
-            val formattedDate = date.toDate("yyyy-MM-dd").let {
-                    it1 -> it1?.formatTo("dd MMM yyyy")
+
+            val formatter = DateStringFormatter()
+            val formattedDate = formatter.toDate(date, "yyyy-MM-dd").let {
+                    it1 ->
+                if (it1 != null) {
+                    formatter.formatTo(it1, "dd MMM yyyy")
+                }
             }
-            val matchDate: TextView = findViewById(R.id.tvNextMatchDate)
-            matchDate.text = formattedDate.toString()
+
+            tvNextMatchDate.text = formattedDate.toString()
 
             val awayTeam: TextView = findViewById(R.id.tvNextAway)
             val homeTeam: TextView = findViewById(R.id.tvNextHome)
@@ -393,47 +284,59 @@ class MainActivity : AppCompatActivity() {
                 nextGame.teams.away.team.id == team.id
 
             val http = HttpConnection()
+            val converter = JsonConverter()
 
             if (isCurrentTeamAway) {
                 awayTeam.text = team.abbreviation
 
                 val otherTeamId = nextGame.teams.home.team.id
-                val otherTeamUrl = "$baseURL$teamEndpoint$otherTeamId"
+                val otherTeamUrl = UrlCompanion.BASE_URL +
+                        UrlCompanion.TEAM_ENDPOINT +
+                        "$otherTeamId"
 
                 http.fetchAsync(otherTeamUrl, this) {
-                    val otherTeam = convertJsonToTeamObject(it)
+                    val otherTeam = converter.convertJsonToTeamObject(it)
                     homeTeam.text = otherTeam.abbreviation
                 }
             } else {
                 val otherTeamId = nextGame.teams.away.team.id
-                val otherTeamUrl = "$baseURL$teamEndpoint$otherTeamId"
+                val otherTeamUrl = UrlCompanion.BASE_URL +
+                        UrlCompanion.TEAM_ENDPOINT +
+                        "$otherTeamId"
 
                 homeTeam.text = team.abbreviation
                 http.fetchAsync(otherTeamUrl, this) {
-                    val otherTeam = convertJsonToTeamObject(it)
+                    val otherTeam = converter.convertJsonToTeamObject(it)
                     awayTeam.text = otherTeam.abbreviation
                 }
             }
 
             val awayTeamSeasonRecords = nextGame.teams.away.leagueRecord
-            val awayWins = awayTeamSeasonRecords.wins.toString()
-            val awayLosses = awayTeamSeasonRecords.losses.toString()
-            val awayOts = awayTeamSeasonRecords.ot.toString()
-            awayTeamRecord.text = "$awayWins-$awayLosses-$awayOts"
+            val awayWins = awayTeamSeasonRecords.wins
+            val awayLosses = awayTeamSeasonRecords.losses
+            val awayOts = awayTeamSeasonRecords.ot
+            awayTeamRecord.text = resources.getString(
+                R.string.record, awayWins, awayLosses, awayOts
+            )
 
             val homeTeamSeasonRecords =
                 nextGame.teams.home.leagueRecord
-            val homeWins = homeTeamSeasonRecords.wins.toString()
-            val homeLosses = homeTeamSeasonRecords.losses.toString()
-            val homeOts = homeTeamSeasonRecords.ot.toString()
-            homeTeamRecord.text = "$homeWins-$homeLosses-$homeOts"
+            val homeWins = homeTeamSeasonRecords.wins
+            val homeLosses = homeTeamSeasonRecords.losses
+            val homeOts = homeTeamSeasonRecords.ot
+            homeTeamRecord.text = resources.getString(
+                R.string.record, homeWins, homeLosses, homeOts
+            )
 
             val matchVenue = nextGame.venue.name
-            nextMatchVenue.text = "@ $matchVenue"
+            nextMatchVenue.text = resources.getString(
+                R.string.match_venue,
+                "@", matchVenue)
         } else {
-            val nextMatchConstraint: ConstraintLayout = findViewById(R.id.nextMatchConstraint)
-            val nextMatchInfoConstraint: ConstraintLayout = findViewById(R.id.nextMatchInfoConstraint)
-            val tvNextMatchDate: TextView = findViewById(R.id.tvNextMatchDate)
+            val nextMatchConstraint: ConstraintLayout =
+                findViewById(R.id.nextMatchConstraint)
+            val nextMatchInfoConstraint: ConstraintLayout =
+                findViewById(R.id.nextMatchInfoConstraint)
             nextMatchConstraint.removeView(nextMatchInfoConstraint)
             nextMatchConstraint.removeView(tvNextMatchDate)
 
@@ -441,14 +344,40 @@ class MainActivity : AppCompatActivity() {
 
             val noMatchAvailable = TextView(this)
             noMatchAvailable.id = View.generateViewId()
-            noMatchAvailable.text = resources.getString(R.string.no_next_matches_available)
+            noMatchAvailable.text = resources.getString(
+                R.string.no_next_matches_available
+            )
+            noMatchAvailable.textSize = 16f
+            noMatchAvailable.typeface = ResourcesCompat.getFont(this, R.font.montserrat_medium)
             nextMatchConstraint.addView(noMatchAvailable)
 
             val set = ConstraintSet()
             set.clone(nextMatchConstraint)
-            set.connect(noMatchAvailable.id, ConstraintSet.TOP, tvNextMatch.id, ConstraintSet.BOTTOM, 24)
-            set.connect(noMatchAvailable.id, ConstraintSet.LEFT, nextMatchConstraint.id, ConstraintSet.LEFT, 0)
-            set.connect(noMatchAvailable.id, ConstraintSet.RIGHT, nextMatchConstraint.id, ConstraintSet.RIGHT, 0)
+
+            set.connect(
+                noMatchAvailable.id,
+                ConstraintSet.TOP,
+                tvNextMatch.id,
+                ConstraintSet.BOTTOM,
+                24
+            )
+
+            set.connect(
+                noMatchAvailable.id,
+                ConstraintSet.LEFT,
+                nextMatchConstraint.id,
+                ConstraintSet.LEFT,
+                0
+            )
+
+            set.connect(
+                noMatchAvailable.id,
+                ConstraintSet.RIGHT,
+                nextMatchConstraint.id,
+                ConstraintSet.RIGHT,
+                0
+            )
+
             set.applyTo(nextMatchConstraint)
         }
     }
@@ -462,19 +391,25 @@ class MainActivity : AppCompatActivity() {
      * @param team The team which info should be shown.
      */
     private fun setupPreviousMatchInfo(team: Team) {
+        val tvPreviousMatchDate: TextView = findViewById(R.id.tvPreviousMatchDate)
+
         if (team.previousGameSchedule.dates.isNotEmpty()) {
             val date = team.previousGameSchedule.dates[0].date
-            val formattedDate = date.toDate("yyyy-MM-dd").let { it1 ->
-                it1?.formatTo("dd MMM yyyy")
+
+            val formatter = DateStringFormatter()
+            val formattedDate = formatter.toDate(date, "yyyy-MM-dd")!!.let {
+                it1 -> formatter.formatTo(it1, "dd MMM yyyy")
             }
-            val matchDate: TextView = findViewById(R.id.tvPreviousMatchDate)
-            matchDate.text = formattedDate.toString()
+            tvPreviousMatchDate.text = formattedDate
 
             val awayTeam: TextView = findViewById(R.id.tvPreviousAway)
             val homeTeam: TextView = findViewById(R.id.tvPreviousHome)
-            val awayTeamResult: TextView = findViewById(R.id.tvPreviousAwayResult)
-            val homeTeamResult: TextView = findViewById(R.id.tvPreviousHomeResult)
-            val venue: TextView = findViewById(R.id.previousMatchVenue)
+            val awayTeamResult: TextView =
+                findViewById(R.id.tvPreviousAwayResult)
+            val homeTeamResult: TextView =
+                findViewById(R.id.tvPreviousHomeResult)
+            val previousMatchVenue: TextView =
+                findViewById(R.id.previousMatchVenue)
 
             val previousGame = team.previousGameSchedule.dates[0].games[0]
 
@@ -482,24 +417,29 @@ class MainActivity : AppCompatActivity() {
                 previousGame.teams.away.team.id == team.id
 
             val http = HttpConnection()
+            val converter = JsonConverter()
 
             if (isCurrentTeamAway) {
                 awayTeam.text = team.abbreviation
 
                 val otherTeamId = previousGame.teams.home.team.id
-                val otherTeamUrl = "$baseURL$teamEndpoint$otherTeamId"
+                val otherTeamUrl = UrlCompanion.BASE_URL +
+                        UrlCompanion.TEAM_ENDPOINT +
+                        "$otherTeamId"
 
                 http.fetchAsync(otherTeamUrl, this) {
-                    val otherTeam = convertJsonToTeamObject(it)
+                    val otherTeam = converter.convertJsonToTeamObject(it)
                     homeTeam.text = otherTeam.abbreviation
                 }
             } else {
                 val otherTeamId = previousGame.teams.away.team.id
-                val otherTeamUrl = "$baseURL$teamEndpoint$otherTeamId"
+                val otherTeamUrl = UrlCompanion.BASE_URL +
+                        UrlCompanion.TEAM_ENDPOINT +
+                        "$otherTeamId"
 
                 homeTeam.text = team.abbreviation
                 http.fetchAsync(otherTeamUrl, this) {
-                    val otherTeam = convertJsonToTeamObject(it)
+                    val otherTeam = converter.convertJsonToTeamObject(it)
                     awayTeam.text = otherTeam.abbreviation
                 }
             }
@@ -507,27 +447,36 @@ class MainActivity : AppCompatActivity() {
             awayTeamResult.text = previousGame.teams.away.score.toString()
             homeTeamResult.text = previousGame.teams.home.score.toString()
 
-            val scheduleURL = "$baseURL$scheduleEndpoint" +
-                    "?teamId=$teamID" +
+            val scheduleURL = UrlCompanion.BASE_URL +
+                    UrlCompanion.SCHEDULE_ENDPOINT +
+                    "?teamId=" +
+                    "$teamID" +
                     "&startDate=$date&endDate=$date" +
-                    "&expand=$mediaExpand"
+                    "&expand=" +
+                    UrlCompanion.MEDIA_EXPAND
 
             http.fetchAsync(scheduleURL, this) {
-                val schedule = convertJsonToScheduleObject(it)
+                val schedule = converter.convertJsonToScheduleObject(it)
                 val game = schedule.dates[0].games[0]
                 val media = game.content.media
                 val path = media.epg[2].items[0].playbacks[2].url
                 Log.d("schedule", path)
-                initializeVideoPlayer(extendedHighlights, path, 1000)
-                addMediaController(extendedHighlights)
+                initializeVideoPlayer(path)
+                addMediaController()
             }
 
-            venue.text = "@ ${previousGame.venue.name}"
+            val matchVenue = previousGame.venue.name
+            previousMatchVenue.text = resources.getString(
+                R.string.match_venue,
+                "@", matchVenue
+            )
         } else {
-            val previousMatchConstraint: ConstraintLayout = findViewById(R.id.previousMatchConstraint)
-            val tvPreviousMatchDate: TextView = findViewById(R.id.tvPreviousMatchDate)
-            val previousMatchInfoConstraint: ConstraintLayout = findViewById(R.id.previousMatchInfoConstraint)
-            val previousMatchExtendedHighlights: VideoView = findViewById(R.id.previousMatchExtendedHighlights)
+            val previousMatchConstraint: ConstraintLayout =
+                findViewById(R.id.previousMatchConstraint)
+            val previousMatchInfoConstraint: ConstraintLayout =
+                findViewById(R.id.previousMatchInfoConstraint)
+            val previousMatchExtendedHighlights: VideoView =
+                findViewById(R.id.previousMatchExtendedHighlights)
 
             previousMatchConstraint.removeView(tvPreviousMatchDate)
             previousMatchConstraint.removeView(previousMatchInfoConstraint)
@@ -542,9 +491,31 @@ class MainActivity : AppCompatActivity() {
 
             val set = ConstraintSet()
             set.clone(previousMatchConstraint)
-            set.connect(noMatchAvailable.id, ConstraintSet.TOP, tvPreviousMatch.id, ConstraintSet.BOTTOM, 24)
-            set.connect(noMatchAvailable.id, ConstraintSet.LEFT, previousMatchConstraint.id, ConstraintSet.LEFT, 0)
-            set.connect(noMatchAvailable.id, ConstraintSet.RIGHT, previousMatchConstraint.id, ConstraintSet.RIGHT, 0)
+
+            set.connect(
+                noMatchAvailable.id,
+                ConstraintSet.TOP,
+                tvPreviousMatch.id,
+                ConstraintSet.BOTTOM,
+                24
+            )
+
+            set.connect(
+                noMatchAvailable.id,
+                ConstraintSet.LEFT,
+                previousMatchConstraint.id,
+                ConstraintSet.LEFT,
+                0
+            )
+
+            set.connect(
+                noMatchAvailable.id,
+                ConstraintSet.RIGHT,
+                previousMatchConstraint.id,
+                ConstraintSet.RIGHT,
+                0
+            )
+
             set.applyTo(previousMatchConstraint)
         }
     }
