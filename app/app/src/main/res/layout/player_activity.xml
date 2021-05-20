@@ -412,6 +412,7 @@
                         android:gravity="center"
                         android:fontFamily="@font/montserrat_semibold"
                         android:textSize="32sp"
+                        android:textColor="@color/teal"
                         android:text=""
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -425,6 +426,7 @@
                         android:gravity="center"
                         android:fontFamily="@font/montserrat_semibold"
                         android:textSize="16sp"
+                        android:textColor="@color/teal"
                         android:text="@string/games"
                         app:layout_constraintTop_toBottomOf="@id/tvPlayerBasicGamesNumber"
                         app:layout_constraintStart_toStartOf="parent"
@@ -449,6 +451,7 @@
                         android:gravity="center"
                         android:fontFamily="@font/montserrat_semibold"
                         android:textSize="32sp"
+                        android:textColor="@color/teal"
                         android:text=""
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -462,6 +465,7 @@
                         android:gravity="center"
                         android:fontFamily="@font/montserrat_semibold"
                         android:textSize="16sp"
+                        android:textColor="@color/teal"
                         android:text="@string/goals"
                         app:layout_constraintTop_toBottomOf="@id/tvPlayerBasicGoalsNumber"
                         app:layout_constraintStart_toStartOf="parent"
@@ -487,6 +491,7 @@
                         android:gravity="center"
                         android:fontFamily="@font/montserrat_semibold"
                         android:textSize="32sp"
+                        android:textColor="@color/teal"
                         android:text=""
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -500,6 +505,7 @@
                         android:gravity="center"
                         android:fontFamily="@font/montserrat_semibold"
                         android:textSize="16sp"
+                        android:textColor="@color/teal"
                         android:text="@string/assists"
                         app:layout_constraintTop_toBottomOf="@id/tvPlayerBasicAssistsNumber"
                         app:layout_constraintStart_toStartOf="parent"
@@ -525,6 +531,7 @@
                         android:gravity="center"
                         android:fontFamily="@font/montserrat_semibold"
                         android:textSize="32sp"
+                        android:textColor="@color/teal"
                         android:text=""
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -538,6 +545,7 @@
                         android:gravity="center"
                         android:fontFamily="@font/montserrat_semibold"
                         android:textSize="16sp"
+                        android:textColor="@color/teal"
                         android:text="@string/points"
                         app:layout_constraintTop_toBottomOf="@+id/tvPlayerBasicPointsNumber"
                         app:layout_constraintStart_toStartOf="parent"
@@ -548,14 +556,28 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <TextView
+                android:id="@+id/tvChartTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:gravity="center"
+                android:text="@string/points_per_month"
+                android:textColor="@color/teal"
+                android:textSize="24sp"
+                android:fontFamily="@font/montserrat_bold"
+                app:layout_constraintTop_toBottomOf="@id/playerBasicStatsConstraint"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
             <com.github.mikephil.charting.charts.BarChart
                 android:id="@+id/playerStatsChart"
                 android:layout_width="match_parent"
                 android:layout_height="500dp"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="16dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/playerBasicStatsConstraint" />
+                app:layout_constraintTop_toBottomOf="@+id/tvChartTitle" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

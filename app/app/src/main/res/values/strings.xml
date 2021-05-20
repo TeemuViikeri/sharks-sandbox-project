@@ -36,4 +36,5 @@
     <string name="lbs">%1$d lbs</string>
     <string name="record">%1$d-%2$d-%3$d</string>
     <string name="match_venue">%1$s %2$s</string>
+    <string name="points_per_month">Points per month</string>
 </resources>

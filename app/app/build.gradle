@@ -7,7 +7,7 @@ android {
     compileSdkVersion 30
 
     defaultConfig {
-        applicationId "fi.tuni.tamk.tiko.myapplication"
+        applicationId "fi.tuni.tamk.tiko.sharksapp"
         minSdkVersion 19
         targetSdkVersion 30
         versionCode 1

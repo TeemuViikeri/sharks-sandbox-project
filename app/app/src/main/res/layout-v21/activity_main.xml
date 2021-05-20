@@ -9,9 +9,12 @@
     android:layout_height="match_parent" >
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/topConstraint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:context=".MainActivity">
+        tools:context=".MainActivity"
+        android:focusable="true"
+        android:focusableInTouchMode="true" >
 
         <TextView
             android:id="@+id/tvTitle"
@@ -435,17 +438,26 @@
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <VideoView
-                    android:id="@+id/previousMatchExtendedHighlights"
-                    android:layout_width="0dp"
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/videoConstraint"
+                    android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_marginTop="24dp"
-                    app:layout_constraintDimensionRatio="16:9"
-                    android:adjustViewBounds="true"
-                    android:scaleType="fitXY"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/previousMatchInfoConstraint" />
+                    app:layout_constraintTop_toBottomOf="@id/previousMatchInfoConstraint" >
+
+                    <VideoView
+                        android:id="@+id/previousMatchExtendedHighlights"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:adjustViewBounds="true"
+                        app:layout_constraintDimensionRatio="16:9"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
