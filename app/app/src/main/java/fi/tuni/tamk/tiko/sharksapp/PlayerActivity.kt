@@ -27,6 +27,13 @@ class PlayerActivity : AppCompatActivity() {
      */
     private lateinit var currentSeason: String
 
+    /**
+     * Lifecycle method. Multiple API fetches is done. Activity includes three
+     * parts after title (player name): basic player information, season stats
+     * and points per months graph.
+     *
+     * @param savedInstanceState Bundle state data. Not used in this activity.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.player_activity)
