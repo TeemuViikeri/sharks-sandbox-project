@@ -14,7 +14,7 @@ class RosterAdapter(
 ) : RecyclerView.Adapter<RosterAdapter.RosterViewHolder>() {
 
     /**
-     *
+     * ViewHolder for roster which holds player's number, name and position.
      */
     inner class RosterViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvPlayerNumber: TextView = view.findViewById(R.id.tvPlayerNumber)
@@ -23,7 +23,12 @@ class RosterAdapter(
     }
 
     /**
+     * Called to create the ViewHolder that will include Views given in the
+     * LayoutInflater.
      *
+     * @param parent Parent ViewGroup which will be inflated with ViewHolder.
+     * @param viewType Type of the view to be inflated to .
+     * @return ViewHolder that holds the view(s).
      */
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RosterViewHolder {
         return RosterViewHolder(
@@ -36,7 +41,12 @@ class RosterAdapter(
     }
 
     /**
+     * Binds view to ViewHolder and displays the data at a certain position.
      *
+     * @param holder The ViewHolder which updates the items at the given
+     * position.
+     * @param position The position of the item in the dataset given to the
+     * adapter.
      */
     override fun onBindViewHolder(holder: RosterViewHolder, position: Int) {
         val player: Player = players[position]
@@ -54,14 +64,17 @@ class RosterAdapter(
     }
 
     /**
+     * Return item count of the dataset given to this adapter.
      *
+     * @return Item count.
      */
     override fun getItemCount(): Int {
         return players.size
     }
 
     /**
-     * Sorts a list of Player objects numerically by their jersey number property.
+     * Sorts a list of Player objects numerically by their jersey number
+     * property.
      *
      * @return Sorted list of Players.
      */
@@ -82,7 +95,8 @@ class RosterAdapter(
     }
 
     /**
-     * Sorts a list of Player objects alphabetically by their position property.
+     * Sorts a list of Player objects alphabetically by their position
+     * property.
      *
      * @return Sorted list of Players.
      */

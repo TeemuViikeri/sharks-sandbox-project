@@ -2,7 +2,6 @@ package fi.tuni.tamk.tiko.sharksapp
 
 import android.content.res.Configuration
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -84,8 +83,6 @@ class MainActivity : AppCompatActivity() {
             videoPlaybackPosition = savedInstanceState.getInt(PLAYBACK_TIME)
         }
 
-        Log.d("onCreate", videoPlaybackPosition.toString())
-
         title = findViewById(R.id.tvTitle)
         rvRoster = findViewById(R.id.rvRoster)
         extendedHighlights = findViewById(R.id.previousMatchExtendedHighlights)
@@ -154,6 +151,7 @@ class MainActivity : AppCompatActivity() {
      */
     override fun onResume() {
         super.onResume()
+        addMediaController()
         setVideoPlayerToPosition(extendedHighlights)
     }
 
@@ -180,6 +178,8 @@ class MainActivity : AppCompatActivity() {
     /**
      * Restores playback position from state Bundle and sets it
      * as VideoView's position.
+     *
+     * @param savedInstanceState The bundle where saved state data is.
      */
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
@@ -195,18 +195,16 @@ class MainActivity : AppCompatActivity() {
         extendedHighlights.setVideoPath(path)
 
         extendedHighlights.setOnPreparedListener {
-            setVideoPlayerToPosition(extendedHighlights)
             addMediaController()
+            setVideoPlayerToPosition(extendedHighlights)
 
-            extendedHighlights.setOnCompletionListener { mp ->
+            extendedHighlights.setOnCompletionListener {
+                videoPlaybackPosition = 0
                 setVideoPlayerToPosition(extendedHighlights)
-
-                Log.d("videoPosition", mp.currentPosition.toString())
             }
 
             scrollView.viewTreeObserver
                 .addOnScrollChangedListener {
-                    Log.d("scrolling", "scrolling")
                     videoMediaController.hide()
                 }
         }
@@ -224,16 +222,17 @@ class MainActivity : AppCompatActivity() {
         } else {
             player.seekTo(1000)
         }
+
+        videoMediaController.hide()
     }
 
     /**
-     * Adds MediaController to VideoView.
+     * Adds and anchors MediaController to VideoView.
      */
     private fun addMediaController() {
         videoMediaController = MyMediaController(this, extendedHighlights)
-        extendedHighlights.setMediaController(videoMediaController)
-        videoMediaController.setAnchorView(findViewById(R.id.videoConstraint))
         videoMediaController.setMediaPlayer(extendedHighlights)
+        extendedHighlights.setMediaController(videoMediaController)
     }
 
     /**
@@ -449,7 +448,6 @@ class MainActivity : AppCompatActivity() {
                 val media = game.content.media
                 val path = media.epg[2].items[0].playbacks[2].url
                 videoPath = path
-                Log.d("schedule", path)
                 initializeVideoPlayer(videoPath)
             }
 
