@@ -1,6 +1,8 @@
-Project work owner: Teemu Viikeri
-Evaluator: Hanna Sepänmaa
-Tested with: Xiaomi Redmi Note 8 Pro
+**Project work owner:** Teemu Viikeri
+
+**Evaluator:** Hanna Sepänmaa
+
+**Tested with:** Xiaomi Redmi Note 8 Pro
 
 **General notes**
 
