@@ -30,6 +30,8 @@ Every column can be sorted through column headers above the roster listing. Colu
 Player profile activity includes basic information at the moment. The activity will include
 current season's statistics in both text and graphs formats. 
 
+![Roster information](./roster-info.jpg)
+
 #### Next match
 
 Next match area displays information of the next game in schedule for the San Jose Sharks.
@@ -40,6 +42,8 @@ Previous match area display information and highlights video of the previous gam
 Highlights video continues even if orientation of the screen is changed. Video also retains played playback position
 through lifecycle and app exits so the user can continue the video from the time position it was left in.
 
+![Match information](./match-info.jpg)
+
 ## Release 2 features
 
 ### UI - Player 
@@ -48,12 +52,16 @@ through lifecycle and app exits so the user can continue the video from the time
 
 Player profile activity now includes the player's basic statistic of the season: games played, goals, assists and total points.
 
+![Player stats](./player-statistics.jpg)
+
 #### Points per month graph
 
 The application uses a 3rd party module to show graph data, [MPAndroidChart](https://weeklycoding.com/mpandroidchart/). A bar chart
 is shown in the player profile under the previously mentioned basic statistics and it shows points per month for the player. The application
 fetches game log data of each game the player has played this season and then uses that data to show total amount of points for each month.
 Month labels are dynamically set to the chart depending on in which months the player has played this season.
+
+![Player stats graph](./player-graph.jpg)
 
 ### App icon and name of the app
 
